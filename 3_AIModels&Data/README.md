@@ -1,141 +1,84 @@
-# TryHackMe - AI Models & Data
+# TryHackMe — AI Models & Data
 
 **Platform**: TryHackMe  
 **Difficulty**: Medium  
 **Category**: AI Security  
-**Date**: 11 Oct 2026  
+**Date**: 11 OCT 2026  
 **Time spent**: ~2 hours (including write-up)  
-**Tags**: `#AI-models` `#MachineLearning` `#cybersecurity` `#black-box`
+**Tags**: `#AI-models` `#MachineLearning` `#cybersecurity` `#black-box` `#DataProvenance` `#FineTuning` `#ModelCards` `#TryHackMe`
 
----
+Room focused on the foundational risks that live inside AI systems themselves: where training data comes from, how models are built and optimised, what happens when you fine-tune someone else’s weights, and why trained models remain fundamentally un-auditable.
 
-## Summary
+## Overview
 
-This room covers key risks inherent in AI security. It builds a clearer understanding of training and model building, and highlights the problems that arise with fine-tuning.
+Builds a clear picture of the AI supply chain — from messy, poorly documented training data through model construction, post-training optimisation, fine-tuning, and the black-box reality of billions of opaque weights. The security throughline is inheritance and opacity: you rarely know what went into a model, and once it is baked in you cannot reliably remove it.
 
-## Key Takeaways
+## Learning Objectives
 
-- **Data is the root risk** — Most organisations cannot answer where their training data came from or whether it was tampered with.
-- **PII and credentials get permanently baked in** via web scraping and cannot be patched out after deployment.
-- **Fine-tuning inherits everything** — biases, vulnerabilities, and weakened safety alignment from the base model.
-- **Models are un-auditable** — You can only test behaviour (sampling); you cannot inspect the billions of weights inside.
+- Understand the four main sources of training data and their relative trust levels
+- Explain data provenance and why most organisations cannot answer basic questions about their training sets
+- Describe core training concepts (epochs, overfitting, validation sets) and post-training techniques (pruning, quantisation, federated learning)
+- Recognise the inheritance problem introduced by fine-tuning pre-trained models
+- Appreciate the black-box nature of trained weights and the role (and limits) of model cards
 
----
+## Task Index
 
-## Learning Objectives & Tasks
+| # | Task | What it covers |
+|---|------|----------------|
+| 1 | Introduction | Scope, vocabulary, and learning objectives |
+| 2 | Training Data | Four data sources, trust levels, provenance gaps, ML-BOM concept, permanent embedding of PII/credentials |
+| 3 | Building the Model | Epochs, overfitting, validation sets, pruning, quantisation, federated learning |
+| 4 | The Inheritance Problem | Pre-training vs. fine-tuning, safety erosion, increased attack surface, version tracking failures |
+| 5 | The Black Box Problem | Opaque weights, behavioural sampling vs. true audit, model cards and their current gaps |
+| 6 | Practical | Hands-on model audit exercise (Hugging Face-style interface) — classify issues by severity |
+| 7 | Conclusion | Recap of data, inheritance, and opacity risks |
 
-**7 tasks in total**
+## Key Concepts
 
-### Task 1 – Intro
+**Training data sources & trust**  
+1. Web scraping → Low trust  
+2. Licensed datasets → Medium trust  
+3. Synthetic (LLM-generated) data → Variable trust  
+4. Internal corpora → High trust (but organisation remains liable)
 
-Sets the scene for what you will learn and focus on. Encourages you to recall prior knowledge. Pay attention to key vocabulary. Establishes the room’s objectives.
+**Data provenance**  
+The ability to answer three questions about any training example:  
+Where did it come from? When was it collected? Has it been modified?  
+In practice the answer is usually “we don’t fully know.” The Data Provenance Initiative found >70 % of data listed as unspecified and dozens of datasets miscategorised. The ML equivalent of an SBOM is the **ML-BOM** — still early in adoption.
 
-### Task 2 – Training Data
+**Training mechanics**  
+- **Epoch** — one full pass over the training set  
+- **Overfitting** — model memorises training data instead of learning general patterns (detected via validation-set divergence)  
+- **Pruning** — remove low-contribution parameters (changes behaviour, rarely well documented)  
+- **Quantisation** — reduce weight precision (can degrade safety alignments and break previously tested defences)  
+- **Federated learning** — train across decentralised data holders; improves privacy but weakens integrity guarantees
 
-AI/ML models are trained on data. GPT-3, for example, was trained on 570 GB of filtered text. Training data typically falls into four buckets:
+**The inheritance problem**  
+Fine-tuning a pre-trained model is the practical route for most organisations, but you inherit:  
+- All biases and strange behaviours of the base model  
+- Any weakened safety alignment (erosion rather than clean breakage)  
+- An enlarged attack surface (research shows fine-tuned models are often more susceptible to prompt injection)  
+- Every flaw present in the specific checkpoint you chose
 
-1. **Web scraping** – Data collected via web crawling → **Low trust**
-2. **Licensed datasets** – Purchased or owned platform data → **Medium trust**
-3. **Synthetic data** – AI-generated content used to train other AI systems → **Variable trust** (≈12 % of fine-tuning data is now LLM-generated)
-4. **Internal corpora** – Company knowledge and proprietary data → **High trust** (controlled, but the organisation is liable for mishandling)
+**The black-box reality**  
+Trained weights are billions of floating-point numbers. You cannot disassemble them the way you can reverse a binary. Security testing is sampling, not auditing. **Model cards** (introduced 2019) attempt to document training data, intended use, evaluation results, limitations, bias assessment, and licence — but they remain voluntary and frequently incomplete.
 
-#### Understanding Provenance
+## Skills & Mapping
 
-Data provenance is the ability to answer three questions about any piece of training data:
+data provenance awareness · training pipeline risks · overfitting detection · pruning / quantisation side-effects · fine-tuning inheritance analysis · model-card evaluation · black-box risk assessment
 
-1. Where did it come from?
-2. When was it collected?
-3. Has it been modified since?
+**Role mappings**  
+- AI/ML security engineer → supply-chain and fine-tuning risk  
+- AppSec / product security → evaluating third-party models before adoption  
+- Red team / AI pentester → understanding inherited weaknesses and enlarged attack surface  
+- Compliance / risk → model cards, ML-BOMs, and documentation gaps
 
-In today’s AI supply chain the answer to all three is usually “we don’t fully know.” More than 70 % of data is listed as unspecified. The **Data Provenance Initiative** audited datasets and found that, on top of the 70 %, 66 datasets were miscategorised. What is inside these models is therefore largely unknown.
+## Personal Takeaways
 
-This is not a new lesson. SolarWinds taught the industry that you cannot trust a binary when you do not know what went into it. That is why Software Bills of Materials (SBOMs) became standard practice. The equivalent for machine learning is the **ML-BOM** — a documented inventory of the datasets used. Adoption is still early.
+Data is the root risk. Most organisations cannot confidently answer where their training data came from or whether it was tampered with. PII and credentials scraped from the web become permanently embedded and cannot be patched out later. Fine-tuning is necessary for real-world use but quietly imports every problem of the base model while often eroding safety and increasing prompt-injection susceptibility. Because the weights themselves are un-auditable, the best available controls are rigorous behavioural testing and insisting on complete, honest model cards. Evaluating AI systems is rapidly becoming a core security skill.
 
-One consequence of heavy reliance on scraped data is that personal information ends up inside the models. Security researchers have recovered API keys and passwords from Common Crawl data. Once this information is baked into a trained model it cannot be filtered out. Model behaviour is a direct result of what it was trained on.
+## References
 
-### Task 3 – Building the Model
-
-Moving from the high-level picture of “data in → model out” to the practical process of training.
-
-- An **epoch** is one complete pass of the algorithm over the entire training dataset. Models typically run for many epochs until they can make accurate predictions.
-- More epochs do **not** automatically produce a better model. Train too long and the model stops learning general patterns and simply memorises the training data — this is called **overfitting**. An overfitted model performs well on the training set and poorly on any other data.
-
-To detect overfitting, a portion of the data is held back as a **validation set**. The model is evaluated on this unseen data at regular intervals. If training accuracy continues to rise while validation accuracy plateaus or falls, overfitting is occurring.
-
-#### Post-training Optimisation
-
-| Technique      | Description                                                                 | Security Considerations                                                                 |
-|----------------|-----------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| **Pruning**    | Removes parameters that contribute little to predictions, shrinking model size | Changes model behaviour after training; rarely documented in detail                     |
-| **Quantisation** | Reduces numerical precision of weights to cut memory and compute requirements | Can degrade safety-aligned behaviour; backdoor defences tested on full-precision models may fail on quantised versions |
-
-#### Federated Learning
-
-The model is trained across decentralised devices or organisations. Each participant keeps its own data locally and only sends weight updates to a central server for aggregation. This protects the privacy of the underlying datasets, but makes integrity much harder to verify. In a centralised system the owner controls the data; in a federated system no single party can fully authenticate what data was used.
-
-### Task 4 – The Inheritance Problem
-
-Training a new LLM from scratch can require trillions of tokens and enormous infrastructure cost. For most organisations this is impractical, so they start from a pre-trained model and **fine-tune** it.
-
-- **Pre-trained model** – A model that already has broad language understanding.
-- **Fine-tuning** – Continuing training on a smaller, domain-specific dataset (e.g., medical literature for healthcare, case law for legal).
-
-**What fine-tuning changes**  
-Task-specific behaviour, tone, and domain knowledge.
-
-**What fine-tuning does *not* change**  
-The base-model weights — the billions of parameters formed during pre-training on data the fine-tuning organisation never saw and almost certainly never audited.
-
-#### The Inheritance Problem
-
-When you adopt someone else’s model you inherit its baked-in biases, strange behaviours, and any weakened safety alignments. This surfaces in three ways:
-
-1. **Safety alignment erodes, it does not break**  
-   Fine-tuning can gradually strip away previously installed safety features.
-
-2. **Specialisation increases the attack surface**  
-   Cisco research showed that fine-tuned models are more susceptible to prompt injection and present larger attack surfaces than their base counterparts. The narrowed focus gives attackers clearer vectors for manipulation.
-
-3. **Version matters — and is rarely tracked**  
-   Fine-tuning targets a specific checkpoint of a base model. Later adopters inherit every flaw, backdoor, or problem present in that checkpoint.
-
-### Task 5 – The Black Box Problem
-
-Traditional software can be compiled down to binary and, with enough effort, disassembled and understood. Trained models are different: they consist of billions of floating-point numbers that are not human-readable. You cannot open a model and determine why it behaves the way it does, nor can you see exactly what it was trained on.
-
-Behavioural testing is possible, but it is sampling, not a true audit. You are forced to trust the original training process.
-
-#### Model Cards
-
-A **model card** is a structured document that accompanies a model and describes what it is, how it was built, and where it falls short. Introduced in 2019 by Google researchers, model cards are becoming a de-facto standard. A good model card answers questions that cannot be answered by inspecting the weights:
-
-- **Training Data** – Sources used, filtering applied, known gaps or biases
-- **Intended Use** – What the model was designed for (and explicitly what it was not)
-- **Evaluation Results** – Performance metrics
-- **Known Limitations** – Conditions under which the model behaves abnormally or underperforms
-- **Bias Assessment** – Where training data or evaluation may have introduced skew
-- **License** – What you are legally permitted to do with the model
-
-#### The Gaps
-
-Proper documentation of the datasets that trained modern AI systems is still missing or incomplete. While model cards are an improvement, they remain voluntary and frequently incomplete. From a security perspective this is the beginning of a nightmare: without an audit trail or a model card, these systems are complete black boxes.
-
-### Task 6 – Practical
-
-Enter the View site (designed to resemble Hugging Face) and begin your model audit. Explore the interface and classify any issues you discover as high, medium, or low severity.
-
-### Task 7 – Conclusion
-
-**Key points**
-
-- AI training data is poorly documented — whether by design or by accident.
-- PII and credentials can become permanently baked into a model.
-- Quantisation and federated learning introduce their own security trade-offs.
-- Fine-tuning a pre-trained model inherits everything that came with it, often eroding safety alignment and increasing vulnerability to prompt injection.
-- Trained model weights are opaque. Security testing can only sample behaviour; model cards are voluntary, incomplete, and sometimes absent.
-
----
-
-## Final Summary
-
-The “black box” nature of modern AI means we rarely understand what is inside these models. We can tweak them, but every tweak can also introduce new vulnerabilities. Evaluation techniques and voluntary documentation (model cards) help, yet gaps remain. Fine-tuning is essential for industry-specific use cases, but it also imports the risks of the base model. Learning how to evaluate AI systems is therefore becoming a core security skill.
+- Data Provenance Initiative findings on dataset documentation gaps  
+- Model Cards for Model Reporting (Mitchell et al., 2019)  
+- Cisco research on fine-tuned model attack surface  
