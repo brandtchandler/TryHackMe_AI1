@@ -1,4 +1,3 @@
-
 # TryHackMe — AI Forensics
 
 **Platform**: TryHackMe  
