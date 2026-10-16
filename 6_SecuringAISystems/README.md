@@ -114,6 +114,7 @@ When auditing an AI assistant, systematically check:
 
 ## References
  
+- TryHackMe room: https://tryhackme.com/room/securingaisystems 
 - OWASP LLM Top 10 (2025): https://genai.owasp.org/  
 - MITRE ATLAS: https://atlas.mitre.org/  
 - NIST AI Risk Management Framework  
